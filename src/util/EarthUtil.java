@@ -171,21 +171,17 @@ public class EarthUtil {
 
             String sql = "INSERT INTO satellite (id," +
                     " displayName," +
-                    " tleFile," +
-                    "satelliteThree ," +
-                    "satelliteFour) VALUES (?, ?, ?, ? , ? )";
+                    "satelliteOne ) VALUES (?, ?, ? )";
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, maxId + 1);
             statement.setString(2, toBeInserted.getDisplayName());
-            statement.setString(3, toBeInserted.getTleFile());
-//            statement.setInt(4, toBeInserted.getSatelliteThree());
-//            statement.setInt(5, toBeInserted.getSatelliteFour());
+            statement.setInt(3, toBeInserted.getSatelliteOne());
 
             int rowsInserted = statement.executeUpdate();
 
             if (rowsInserted > 0) {
-                System.out.println("A new user was inserted successfully!");
+                System.out.println("A new satellite was inserted successfully!");
                 succeed = true;
             }
 
@@ -238,13 +234,12 @@ public class EarthUtil {
             while (resultSet.next()) {
                 Long id = resultSet.getLong("id");
                 String displayName = resultSet.getString("displayName");
-                String tleFile = resultSet.getString("tleFile");
                 Integer satelliteOne = resultSet.getInt("satelliteOne");
                 Integer satelliteTwo = resultSet.getInt("satelliteTwo");
                 Integer satelliteThree = resultSet.getInt("satelliteThree");
                 Integer satelliteFour = resultSet.getInt("satelliteFour");
 
-                Satellite satellite = new Satellite(id, displayName, tleFile, satelliteOne, satelliteTwo, satelliteThree, satelliteFour);
+                Satellite satellite = new Satellite(displayName, satelliteOne, satelliteTwo, satelliteThree, satelliteFour);
                 satellites.add(satellite);
             }
             resultSet.close();

@@ -618,60 +618,35 @@ public class Root extends JFrame implements Runnable {
             int reply = JOptionPane.showConfirmDialog(this, "آیا برای اضافه کردن اطمینان دارید ؟");
             if (reply == JOptionPane.YES_OPTION) {
                 try {
-
-
                     FileInputStream excelFile = new FileInputStream(fileDialog.getSelectedFile());
                     Workbook workbook = new XSSFWorkbook(excelFile);
                     Sheet datatypeSheet = workbook.getSheetAt(0);
-                    Iterator<Row> iterator = datatypeSheet.iterator();
+                    Iterator<Row> rowIterator = datatypeSheet.iterator();
+                    rowIterator.next();
+                    while (rowIterator.hasNext()) {
 
-                    while (iterator.hasNext()) {
+                        Row currentRow = rowIterator.next();
+                        Iterator<Cell> cellIterator = currentRow.iterator();
 
-                        Row currentRow = iterator.next();
-                        Iterator<Cell> iterator1 = currentRow.iterator();
+                        while (cellIterator.hasNext()) {
 
-                        while (iterator1.hasNext()) {
+                            Cell cell = cellIterator.next();
 
-                            Row nextRow = iterator.next();
-                            Iterator<Cell> cellIterator = nextRow.cellIterator();
-                            String sats = "";
-                            while (cellIterator.hasNext()) {
-                                Cell cell = cellIterator.next();
+                            Integer satOne = cell.getColumnIndex();
 
+                            String stringCellValue = cell.getStringCellValue();
+                            if (!stringCellValue.isEmpty() && !Objects.equals(stringCellValue, "")) {
+                                String satName = stringCellValue.split("\\(")[0];
 
-                                sats += "!" + cell.getStringCellValue();
-//                                switch (cell.getCellType()) {
-//                                    case Cell.CELL_TYPE_STRING:
-//                                        sats += cell.getStringCellValue();
-//                                        break;
-//                                    case Cell.CELL_TYPE_BOOLEAN:
-//                                        sats = cell.getBooleanCellValue();
-//                                        break;
-//                                    case Cell.CELL_TYPE_NUMERIC:
-//                                        System.out.print(cell.getNumericCellValue());
-//                                        break;
-//                                }
-                                System.out.print("!");
+                                Satellite satellite = new Satellite(satName, satOne, null, null, null);
+                                EarthUtil.addSatellite(satellite);
                             }
-
-                            String[] split = sats.split("!");
-                            for (String s : split) {
-                                if (!Objects.equals(s, "")) {
-                                    Satellite satellite = new Satellite();
-                                    satellite.setDisplayName(s);
-                                    satellite.setTleFile(s + ".txt");
-                                    EarthUtil.addSatellite(satellite);
-                                }
-
-                            }
-
-                            System.out.println();
-
                         }
 
                     }
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(this, "ذخیره سازی با موفقیت انجام شد", "خطا", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "خطا رخ داده است", "خطا", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -856,41 +831,6 @@ public class Root extends JFrame implements Runnable {
         }
     }
 
-    private void testTable() {
-        ResultDialog resultDialog = new ResultDialog(this, true);
-        DefaultTableModel model = (DefaultTableModel) ResultDialog.resultTable.getModel();
-        DefaultTableCellRenderer firstColumn = new DefaultTableCellRenderer();
-        DefaultTableCellRenderer secondColumn = new DefaultTableCellRenderer();
-        DefaultTableCellRenderer thirdColumn = new DefaultTableCellRenderer();
-        for (int i = 0; i < 10; i++) {
-            model.addRow(new Object[]{"asghar", "akbar", EarthUtil.convertJulianToPersian(new Date())});
-
-
-            // for first column
-            firstColumn.setBackground(Color.RED);
-            firstColumn.setHorizontalAlignment(SwingConstants.RIGHT);
-            ResultDialog.resultTable.getColumnModel().getColumn(0).setCellRenderer(firstColumn);
-            ResultDialog.resultTable.getColumnModel().getColumn(0).setPreferredWidth(200);
-            ResultDialog.resultTable.getColumnModel().getColumn(0).setMaxWidth(200);
-
-
-            // for the second column
-            secondColumn.setBackground(Color.YELLOW);
-            secondColumn.setHorizontalAlignment(SwingConstants.CENTER);
-            ResultDialog.resultTable.getColumnModel().getColumn(1).setCellRenderer(secondColumn);
-            ResultDialog.resultTable.getColumnModel().getColumn(1).setPreferredWidth(180);
-            ResultDialog.resultTable.getColumnModel().getColumn(1).setMaxWidth(180);
-
-            thirdColumn.setHorizontalAlignment(SwingConstants.RIGHT);
-            ResultDialog.resultTable.getColumnModel().getColumn(2).setCellRenderer(thirdColumn);
-
-            ResultDialog.resultTable.setRowHeight(80);
-
-        }
-
-        resultDialog.setVisible(true);
-    }
-
     private void passPrediction() throws Exception {
         int countFacilities = facilityList.getModel().getSize();
         ListModel<Facility> listModel = facilityList.getModel();
@@ -915,18 +855,22 @@ public class Root extends JFrame implements Runnable {
                     groundStation.setStationName(facility.getDisplayName());
 
                     // Define AbstractSatellite by reading tle file
-                    File file = new File("src/resource/tle/" + satellite.getTleFile());
+                    File file = new File("src/resource/tle/tle.txt");
                     if (file.exists()) {
-
-
-                        FileReader fileReader = new FileReader(file);
-                        BufferedReader bufferedReader = new BufferedReader(fileReader);
-                        String satelliteName = bufferedReader.readLine();
-                        String lineOne = bufferedReader.readLine();
-                        String lineTwo = bufferedReader.readLine();
-                        AbstractSatellite abstractSatellite = new SatelliteTleSGP4(satelliteName, lineOne, lineTwo);
-                        abstractSatellite.setDisplayName(satelliteName);
-
+                        String lineOne = "";
+                        String lineTwo = "";
+                        final Scanner scanner = new Scanner(file);
+                        while (scanner.hasNextLine()) {
+                            final String lineFromFile = scanner.nextLine();
+                            if (lineFromFile.contains(satellite.getDisplayName())) {
+                                // a match!
+                                lineOne = scanner.nextLine();
+                                lineTwo = scanner.nextLine();
+                                break;
+                            }
+                        }
+                        AbstractSatellite abstractSatellite = new SatelliteTleSGP4(satellite.getDisplayName(), lineOne, lineTwo);
+                        abstractSatellite.setDisplayName(satellite.getDisplayName());
 
                         Calendar startCalendar = EarthUtil.dateToCalendar(facility.getStartDate());
                         Time start = new Time(startCalendar.get(Calendar.YEAR),
@@ -968,14 +912,9 @@ public class Root extends JFrame implements Runnable {
 
     private boolean checkCondition(Facility facility, Satellite satellite) {
         boolean valid = true;
-        if (!Objects.equals(facility.getFacilityFour(), satellite.getSatelliteFour())) {
+        if (!Objects.equals(facility.getFacilityOne(), satellite.getSatelliteOne())) {
             valid = false;
         }
-
-        if (!Objects.equals(facility.getFacilityThree(), satellite.getSatelliteThree())) {
-            valid = false;
-        }
-
         return valid;
     }
 
@@ -999,9 +938,6 @@ public class Root extends JFrame implements Runnable {
         int row = 0;
         Date lastDay = null;
         StringBuilder eachDay = new StringBuilder();
-
-        DefaultTableCellRenderer cell = new DefaultTableCellRenderer();
-
         for (double jd = jdStart; jd <= jdStart + timeSpanDays; jd += timeStepSec / (60.0 * 60.0 * 24.0)) {
             time0 = time1;
             time1 = jd + timeStepSec / (60.0 * 60.0 * 24.0);
@@ -1036,7 +972,6 @@ public class Root extends JFrame implements Runnable {
                     lastDay = parse;
                 }
 
-
                 Calendar parsCal = Calendar.getInstance();
                 parsCal.setTime(parse);
                 int parsDay = parsCal.get(Calendar.DAY_OF_MONTH);
@@ -1047,7 +982,6 @@ public class Root extends JFrame implements Runnable {
 
 
                 String riseDate = EarthUtil.convertJulianToPersian(parse, "EEEE d MMMM y");
-                String riseTime = EarthUtil.convertJulianToPersian(parse, "HH:mm:ss");
                 Float floatDur = Float.parseFloat(durStr);
                 int intDur = floatDur.intValue();
 
@@ -1099,22 +1033,23 @@ public class Root extends JFrame implements Runnable {
                         StringBuilder popUp = new StringBuilder();
                         popUp.append("از ساعت");
                         popUp.append("\n");
-                        popUp.append(split1[1]);
+                        String tilTime = EarthUtil.convertJulianToPersian(format2.parse(split1[0]), "HH:mm:ss");
+                        popUp.append(tilTime);
                         popUp.append("\n");
                         popUp.append("تا ساعت");
                         popUp.append("\n");
-                        String tilTime = EarthUtil.convertJulianToPersian(format2.parse(split1[0]), "HH:mm:ss");
-                        popUp.append(tilTime);
+                        popUp.append(split1[1]);
                         popUp.append("\n");
 
                         if (valueAt != null) {
                             valueAt += popUp.toString();
                             valueAt += "توسط ماهواره " + "\n" + sat.getDisplayName();
+                            valueAt += "\n";
                             ResultDialog.resultTable.setValueAt("خطر", row, column);
                             valuesAt[row][column] = valueAt;
                         } else {
                             ResultDialog.resultTable.setValueAt("خطر", row, column);
-                            valuesAt[row][column] = popUp.toString() + " توسط ماهواره " + "\n" + sat.getDisplayName();
+                            valuesAt[row][column] = popUp.toString() + " توسط ماهواره " + "\n" + sat.getDisplayName() + "\n";
                         }
                     }
 
@@ -1127,11 +1062,8 @@ public class Root extends JFrame implements Runnable {
                     eachDay.append("//");
 
                 }
-
-
                 riseTimeStr = null;
                 durStr = null;
-
             }
 
 
