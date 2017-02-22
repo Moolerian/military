@@ -74,7 +74,6 @@ public class Root extends JFrame implements Runnable {
     private javax.swing.JCheckBoxMenuItem compassMenuItem;
     private javax.swing.JMenuItem customeFacilityMenuItem;
     private javax.swing.JMenu editMenu;
-    private javax.swing.JButton excelSat;
     public static javax.swing.JList<Facility> facilityList;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JButton jButton1;
@@ -98,6 +97,7 @@ public class Root extends JFrame implements Runnable {
     private javax.swing.JCheckBoxMenuItem placeNameMenuItem;
     private javax.swing.JButton removeFacilityFromList;
     private javax.swing.JButton runPassPrediction;
+    private javax.swing.JButton satDetailsButton;
     private javax.swing.JButton satReport;
     private javax.swing.JCheckBoxMenuItem scaleMenuItem;
     private javax.swing.JPanel top;
@@ -194,7 +194,7 @@ public class Root extends JFrame implements Runnable {
         Save = new javax.swing.JButton();
         Exit = new javax.swing.JButton();
         satReport = new javax.swing.JButton();
-        excelSat = new javax.swing.JButton();
+        satDetailsButton = new javax.swing.JButton();
         center = new javax.swing.JPanel();
         bottom = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -323,17 +323,17 @@ public class Root extends JFrame implements Runnable {
             }
         });
 
-        satReport.setText("ماهواره ها");
+        satReport.setText("گزارش ماهواره ها");
         satReport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 satReportActionPerformed(evt);
             }
         });
 
-        excelSat.setText("تعریف ماهواره دسته ایی");
-        excelSat.addActionListener(new java.awt.event.ActionListener() {
+        satDetailsButton.setText("جزییات ماهواره");
+        satDetailsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                excelSatActionPerformed(evt);
+                satDetailsButtonActionPerformed(evt);
             }
         });
 
@@ -358,17 +358,17 @@ public class Root extends JFrame implements Runnable {
                                 .addComponent(WorldView)
                                 .addGap(18, 18, 18)
                                 .addComponent(Compass)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGap(18, 18, 18)
                                 .addComponent(Help)
                                 .addGap(18, 18, 18)
                                 .addComponent(Save)
-                                .addGap(18, 18, 18)
-                                .addComponent(Exit)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(satReport)
-                                .addGap(18, 18, 18)
-                                .addComponent(excelSat)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 165, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Exit)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(satDetailsButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 251, Short.MAX_VALUE)
                                 .addComponent(runPassPrediction, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())
         );
@@ -390,7 +390,7 @@ public class Root extends JFrame implements Runnable {
                                         .addComponent(Save)
                                         .addComponent(Exit)
                                         .addComponent(satReport)
-                                        .addComponent(excelSat))
+                                        .addComponent(satDetailsButton))
                                 .addContainerGap())
         );
 
@@ -472,12 +472,12 @@ public class Root extends JFrame implements Runnable {
         centerLayout.setHorizontalGroup(
                 centerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(bottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(WWJUtil.getWwj(), javax.swing.GroupLayout.DEFAULT_SIZE, 1401, Short.MAX_VALUE)
+                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 1401, Short.MAX_VALUE)
         );
         centerLayout.setVerticalGroup(
                 centerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerLayout.createSequentialGroup()
-                                .addComponent(WWJUtil.getWwj(), javax.swing.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
+                                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(bottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -603,8 +603,22 @@ public class Root extends JFrame implements Runnable {
 
     private void satReportActionPerformed(java.awt.event.ActionEvent evt) {
 
-        ReportDetails reportDetails = new ReportDetails(this, true);
-        reportDetails.setVisible(true);
+
+        DefaultTableModel model = (DefaultTableModel) SatReportDialog.jTable1.getModel();
+        SatReportDialog.jTable1.setRowHeight(80);
+        List a = EarthUtil.getSatReports();
+        model.addRow(a.toArray());
+
+        SatReportDialog satReportDialog = new SatReportDialog(this, true);
+        satReportDialog.setVisible(true);
+
+    }
+
+    private void satDetailsButtonActionPerformed(java.awt.event.ActionEvent evt) {
+
+        AddSatDetailsDialog addSatDetailsDialog = new AddSatDetailsDialog(this, true);
+        addSatDetailsDialog.setVisible(true);
+
     }
 
     private void excelSatActionPerformed(java.awt.event.ActionEvent evt) {
