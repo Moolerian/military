@@ -866,25 +866,28 @@ public class Root extends JFrame implements Runnable {
                                 // a match!
                                 lineOne = scanner.nextLine();
                                 lineTwo = scanner.nextLine();
+                                scanner.close();
                                 break;
                             }
                         }
-                        AbstractSatellite abstractSatellite = new SatelliteTleSGP4(satellite.getDisplayName(), lineOne, lineTwo);
-                        abstractSatellite.setDisplayName(satellite.getDisplayName());
 
-                        Calendar startCalendar = EarthUtil.dateToCalendar(facility.getStartDate());
-                        Time start = new Time(startCalendar.get(Calendar.YEAR),
-                                startCalendar.get(Calendar.MONTH) + 1,
-                                startCalendar.get(Calendar.DAY_OF_MONTH),
-                                startCalendar.get(Calendar.HOUR_OF_DAY),
-                                startCalendar.get(Calendar.MINUTE),
-                                startCalendar.get(Calendar.SECOND));
-                        start.setDateFormat(dateFormat);
+                        if (!Objects.equals(lineOne, "") & !Objects.equals(lineTwo, "")) {
+                            AbstractSatellite abstractSatellite = new SatelliteTleSGP4(satellite.getDisplayName(), lineOne, lineTwo);
+                            abstractSatellite.setDisplayName(satellite.getDisplayName());
 
-                        double timeSpanDays = EarthUtil.daysBetween(facility.getStartDate(), facility.getEndDate());
+                            Calendar startCalendar = EarthUtil.dateToCalendar(facility.getStartDate());
+                            Time start = new Time(startCalendar.get(Calendar.YEAR),
+                                    startCalendar.get(Calendar.MONTH) + 1,
+                                    startCalendar.get(Calendar.DAY_OF_MONTH),
+                                    startCalendar.get(Calendar.HOUR_OF_DAY),
+                                    startCalendar.get(Calendar.MINUTE),
+                                    startCalendar.get(Calendar.SECOND));
+                            start.setDateFormat(dateFormat);
 
-                        runPassPrediction(timeSpanDays, groundStation, abstractSatellite, start, model);
+                            double timeSpanDays = EarthUtil.daysBetween(facility.getStartDate(), facility.getEndDate());
 
+                            runPassPrediction(timeSpanDays, groundStation, abstractSatellite, start, model);
+                        }
                     }
                 }
             }
@@ -1040,6 +1043,7 @@ public class Root extends JFrame implements Runnable {
                         popUp.append("\n");
                         popUp.append(split1[1]);
                         popUp.append("\n");
+                        popUp.append("************************");
 
                         if (valueAt != null) {
                             valueAt += popUp.toString();
