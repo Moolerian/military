@@ -6,6 +6,7 @@ import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwindx.examples.ClickAndGoSelectListener;
 import model.Facility;
+import model.SatReport;
 import model.Satellite;
 import name.gano.astro.AER;
 import name.gano.astro.time.Time;
@@ -14,6 +15,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import util.*;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -74,6 +76,7 @@ public class Root extends JFrame implements Runnable {
     private javax.swing.JCheckBoxMenuItem compassMenuItem;
     private javax.swing.JMenuItem customeFacilityMenuItem;
     private javax.swing.JMenu editMenu;
+    private javax.swing.JButton excelSat;
     public static javax.swing.JList<Facility> facilityList;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JButton jButton1;
@@ -195,6 +198,7 @@ public class Root extends JFrame implements Runnable {
         Exit = new javax.swing.JButton();
         satReport = new javax.swing.JButton();
         satDetailsButton = new javax.swing.JButton();
+        excelSat = new javax.swing.JButton();
         center = new javax.swing.JPanel();
         bottom = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -337,6 +341,13 @@ public class Root extends JFrame implements Runnable {
             }
         });
 
+        excelSat.setText("تعریف دسته ایی ماهواره");
+        excelSat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                excelSatActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout topLayout = new javax.swing.GroupLayout(top);
         top.setLayout(topLayout);
         topLayout.setHorizontalGroup(
@@ -368,7 +379,9 @@ public class Root extends JFrame implements Runnable {
                                 .addComponent(Exit)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(satDetailsButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 251, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(excelSat)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
                                 .addComponent(runPassPrediction, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())
         );
@@ -390,7 +403,8 @@ public class Root extends JFrame implements Runnable {
                                         .addComponent(Save)
                                         .addComponent(Exit)
                                         .addComponent(satReport)
-                                        .addComponent(satDetailsButton))
+                                        .addComponent(satDetailsButton)
+                                        .addComponent(excelSat))
                                 .addContainerGap())
         );
 
@@ -472,12 +486,12 @@ public class Root extends JFrame implements Runnable {
         centerLayout.setHorizontalGroup(
                 centerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(bottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 1401, Short.MAX_VALUE)
+                        .addComponent(WWJUtil.getWwj(), javax.swing.GroupLayout.DEFAULT_SIZE, 1401, Short.MAX_VALUE)
         );
         centerLayout.setVerticalGroup(
                 centerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerLayout.createSequentialGroup()
-                                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
+                                .addComponent(WWJUtil.getWwj(), javax.swing.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(bottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -603,13 +617,32 @@ public class Root extends JFrame implements Runnable {
 
     private void satReportActionPerformed(java.awt.event.ActionEvent evt) {
 
-
+        SatReportDialog satReportDialog = new SatReportDialog(this, true);
         DefaultTableModel model = (DefaultTableModel) SatReportDialog.jTable1.getModel();
         SatReportDialog.jTable1.setRowHeight(80);
-        List a = EarthUtil.getSatReports();
-        model.addRow(a.toArray());
+        List<SatReport> satReports = EarthUtil.getSatReports();
 
-        SatReportDialog satReportDialog = new SatReportDialog(this, true);
+        for (SatReport satReport : satReports) {
+            Object[] raw = new Object[16];
+            raw[0] = satReport.getName();
+            raw[1] = satReport.getMadeIn();
+            raw[2] = satReport.getLaunchDate();
+            raw[3] = satReport.getTilt();
+            raw[4] = satReport.getAltitude();
+            raw[5] = satReport.getRCS();
+            raw[6] = satReport.getCircuit();
+            raw[7] = satReport.getSatelliteLife();
+            raw[8] = satReport.getSensor();
+            raw[9] = satReport.getSensorType();
+            raw[10] = satReport.getSpatialResolution();
+            raw[11] = satReport.getTemporalResolution();
+            raw[12] = satReport.getRadiometricResolution();
+            raw[13] = satReport.getWidthPassage();
+            raw[14] = satReport.getBondNumber();
+            raw[15] = satReport.getSpectralRange();
+            model.addRow(raw);
+        }
+
         satReportDialog.setVisible(true);
 
     }
@@ -632,6 +665,8 @@ public class Root extends JFrame implements Runnable {
             int reply = JOptionPane.showConfirmDialog(this, "آیا برای اضافه کردن اطمینان دارید ؟");
             if (reply == JOptionPane.YES_OPTION) {
                 try {
+                    this.setEnabled(false);
+
                     FileInputStream excelFile = new FileInputStream(fileDialog.getSelectedFile());
                     Workbook workbook = new XSSFWorkbook(excelFile);
                     Sheet datatypeSheet = workbook.getSheetAt(0);
@@ -658,6 +693,9 @@ public class Root extends JFrame implements Runnable {
                         }
 
                     }
+
+                    this.setEnabled(true);
+                    JOptionPane.showMessageDialog(this, "اطلاعات فایل با موفقیت به پایگاه داده اضافه شد", "پیغام", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception e) {
                     e.printStackTrace();
                     JOptionPane.showMessageDialog(this, "خطا رخ داده است", "خطا", JOptionPane.ERROR_MESSAGE);

@@ -274,13 +274,14 @@ public class AddSatDetailsDialog extends javax.swing.JDialog {
                 boolean secceed = EarthUtil.addSatReport(satReport);
                 if (secceed) {
                     JOptionPane.showMessageDialog(this, "ذخیره سازی انجام شد", "پیغام", JOptionPane.INFORMATION_MESSAGE);
+                    this.setVisible(false);
                 } else {
                     JOptionPane.showMessageDialog(null, "خطایی در پردازش شما رخ داده است.", "نا موفق", JOptionPane.ERROR_MESSAGE);
                 }
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "خطایی در پردازش شما رخ داده است.", "نا موفق", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "لطفا اطلاعات را کامل و صحیح وارد کنید.", "نا موفق", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
 
