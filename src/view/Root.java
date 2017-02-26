@@ -58,6 +58,7 @@ public class Root extends JFrame implements Runnable {
                 "src/resource/CacheLocationConfiguration.xml");
     }
 
+
     // Variables declaration - do not modify
     private javax.swing.JToggleButton Compass;
     private javax.swing.JButton CustomFacility;
@@ -67,10 +68,10 @@ public class Root extends JFrame implements Runnable {
     private javax.swing.JButton Go;
     private javax.swing.JButton Help;
     private javax.swing.JButton NewFacility;
-    private javax.swing.JButton Save;
     private javax.swing.JMenuItem SaveMenuItem;
     private javax.swing.JToggleButton Scale;
     private javax.swing.JToggleButton WorldView;
+    private javax.swing.JButton allSatsButton;
     private javax.swing.JPanel bottom;
     private javax.swing.JPanel center;
     private javax.swing.JCheckBoxMenuItem compassMenuItem;
@@ -194,11 +195,11 @@ public class Root extends JFrame implements Runnable {
         Compass = new javax.swing.JToggleButton();
         WorldView = new javax.swing.JToggleButton();
         Scale = new javax.swing.JToggleButton();
-        Save = new javax.swing.JButton();
         Exit = new javax.swing.JButton();
         satReport = new javax.swing.JButton();
         satDetailsButton = new javax.swing.JButton();
         excelSat = new javax.swing.JButton();
+        allSatsButton = new javax.swing.JButton();
         center = new javax.swing.JPanel();
         bottom = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -313,13 +314,6 @@ public class Root extends JFrame implements Runnable {
             }
         });
 
-        Save.setText("ذخیره");
-        Save.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                SaveActionPerformed(evt);
-            }
-        });
-
         Exit.setText("خروج");
         Exit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -348,6 +342,13 @@ public class Root extends JFrame implements Runnable {
             }
         });
 
+        allSatsButton.setText("لیست ماهواره ها");
+        allSatsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                allSatsButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout topLayout = new javax.swing.GroupLayout(top);
         top.setLayout(topLayout);
         topLayout.setHorizontalGroup(
@@ -372,16 +373,16 @@ public class Root extends JFrame implements Runnable {
                                 .addGap(18, 18, 18)
                                 .addComponent(Help)
                                 .addGap(18, 18, 18)
-                                .addComponent(Save)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(satReport)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Exit)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(satDetailsButton)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(excelSat)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(allSatsButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                                .addComponent(Exit)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(runPassPrediction, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())
         );
@@ -400,11 +401,11 @@ public class Root extends JFrame implements Runnable {
                                         .addComponent(WorldView)
                                         .addComponent(Compass)
                                         .addComponent(Help)
-                                        .addComponent(Save)
                                         .addComponent(Exit)
                                         .addComponent(satReport)
                                         .addComponent(satDetailsButton)
-                                        .addComponent(excelSat))
+                                        .addComponent(excelSat)
+                                        .addComponent(allSatsButton))
                                 .addContainerGap())
         );
 
@@ -618,7 +619,7 @@ public class Root extends JFrame implements Runnable {
     private void satReportActionPerformed(java.awt.event.ActionEvent evt) {
 
         SatReportDialog satReportDialog = new SatReportDialog(this, true);
-        DefaultTableModel model = (DefaultTableModel) SatReportDialog.jTable1.getModel();
+        DefaultTableModel model = (DefaultTableModel) satReportDialog.jTable1.getModel();
         SatReportDialog.jTable1.setRowHeight(80);
         List<SatReport> satReports = EarthUtil.getSatReports();
 
@@ -652,6 +653,68 @@ public class Root extends JFrame implements Runnable {
         AddSatDetailsDialog addSatDetailsDialog = new AddSatDetailsDialog(this, true);
         addSatDetailsDialog.setVisible(true);
 
+    }
+
+    @SuppressWarnings("Duplicates")
+    private void allSatsButtonActionPerformed(java.awt.event.ActionEvent evt) {
+
+        final ShowSats showSats = new ShowSats(this, true);
+        final DefaultTableModel model = (DefaultTableModel) showSats.satBrowser.getModel();
+        showSats.satBrowser.setRowHeight(80);
+        List<Satellite> sats = EarthUtil.getSatellites();
+
+        showSats.satBrowser.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1) {
+                    JTable target = (JTable) e.getSource();
+                    int column = target.getSelectedColumn();
+                    int row = target.getSelectedRow();
+                    if (column == 0) {
+                        // remove row
+                        int reply = JOptionPane.showConfirmDialog(null, "آیا برای حذف کردن اطمینان دارید ؟");
+                        if (reply == JOptionPane.YES_OPTION) {
+                            String satName = (String) showSats.satBrowser.getValueAt(row, 2);
+                            EarthUtil.removeByName(satName);
+                            model.removeRow(row);
+                            showSats.pack();
+                            showSats.revalidate();
+                            showSats.repaint();
+                            showSats.doLayout();
+                        }
+                    }
+                }
+            }
+        });
+
+        for (int i = 0; i < sats.size(); i++) {
+            Satellite satellite = sats.get(i);
+            Object[] raw = new Object[4];
+            raw[2] = satellite.getDisplayName();
+            String satelliteOne = "";
+            switch (satellite.getSatelliteOne()) {
+                case 0:
+                    satelliteOne = "بیش از 9 متر";
+                    break;
+                case 1:
+                    satelliteOne = "بین 4.5 تا 9 متر";
+                    break;
+                case 2:
+                    satelliteOne = "بین 2.5 تا 4.5 متر";
+                    break;
+                case 3:
+                    satelliteOne = "بین 1.2 تا 2.5 متر";
+                    break;
+                case 4:
+                    satelliteOne = "بین 0.75 تا 1.2 متر";
+                    break;
+            }
+
+            raw[1] = satelliteOne;
+            raw[0] = "حذف";
+            model.addRow(raw);
+        }
+
+        showSats.setVisible(true);
     }
 
     private void excelSatActionPerformed(java.awt.event.ActionEvent evt) {

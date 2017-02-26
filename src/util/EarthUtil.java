@@ -307,6 +307,52 @@ public class EarthUtil {
         return satellites;
     }
 
+    public static void removeByName(String satName) {
+        Connection connection = connectDB();
+        PreparedStatement statement;
+        try {
+            statement = connection.prepareStatement("DELETE FROM satellite where displayName = ?");
+
+            statement.setString(1, satName);
+
+            statement.executeUpdate();
+            statement.close();
+            connection.close();
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.exit(0);
+        }
+    }
+
+    public static Satellite findByName(String satName) {
+        Connection connection = connectDB();
+        PreparedStatement statement;
+        Satellite satellite = null;
+        try {
+            statement = connection.prepareStatement("SELECT * FROM satellite where displayName LIKE ? ");
+
+            statement.setString(1, "%"+satName+"%");
+
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                String displayName = resultSet.getString("displayName");
+                Integer satelliteOne = resultSet.getInt("satelliteOne");
+                Integer satelliteTwo = resultSet.getInt("satelliteTwo");
+                Integer satelliteThree = resultSet.getInt("satelliteThree");
+                Integer satelliteFour = resultSet.getInt("satelliteFour");
+
+                satellite = new Satellite(displayName, satelliteOne, satelliteTwo, satelliteThree, satelliteFour);
+            }
+            statement.close();
+            connection.close();
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.exit(0);
+        }
+
+        return satellite;
+    }
+
     public static List<SatReport> getSatReports() {
         Connection connection = connectDB();
         Statement statement;
